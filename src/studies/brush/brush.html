@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>D3 v3 lab</title>
+  <style type="text/less">
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {padding-top: 70px;}
+  </style>
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font: 14px monospace;
+    }
+    .container {
+      border:red solid 1px;
+    }
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+      display: none;
+    }
+
+    .line {
+      fill: none;
+      stroke: crimson;
+      stroke-width: 1.5px;
+    }
+
+    .brush {
+      fill: lightgray;
+      fill-opacity: .75;
+      shape-rendering: crispEdges;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chart">
+    Chart has not being loaded
+  </div>
+  <div class="container">
+    <h1>tambora on brush</h1>
+    <hr>
+    <div>
+      <p><mark>Please open console for more information</mark></p>
+      <h3>Reference:</h3>
+      <ul>
+        <li><a href="https://github.com/mbostock/d3/wiki/SVG-Controls">d3.brush API</a></li>
+        <li><a href="https://github.com/mbostock/d3/wiki/Time-Formatting">d3.time Formatting</a></li>
+      </ul>
+    </div>
+    <div id="timeline"></div>
+    <hr>
+  </div>
+  <script src="http://localhost:9091/less/dist/less.js"></script>
+  <script src="http://localhost:9091/lodash/lodash.js"></script>
+  <script src="http://localhost:9091/chance/chance.js"></script>
+  <script src="http://localhost:9091/d3/d3.js"></script>
+  <script>
+    const chart = d3.select('.chart');
+    chart.html(`
+      d3: version ${d3.version} </br>
+      _: version ${_.VERSION} </br>
+      less: version ${less.version} </br>
+      chance.js: version ${chance.VERSION}
+    `);
+  </script>
+  <!-- researching d3s brush -->
+  <script type="text/javascript">
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = 960 - margin.left - margin.right,
+        height = 180 - margin.top - margin.bottom;
+
+    var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+    var x = d3.time.scale()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var line = d3.svg.line()
+        .x(function(d) { return x(d.time_begin); })
+        .y(function(d) { return y(d.count); })
+        .interpolate("bundle");
+
+    var svg = d3.select("#timeline").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("events.csv", function(error, data) {
+      data.forEach(function(d) {
+        d.count = +d.count;
+        d.time_begin = parseDate(d.time_begin);
+
+      });
+
+      x.domain(d3.extent(data, function(d) { return d.time_begin; }));
+      y.domain(d3.extent(data, function(d) { return d.count; }));
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("n count");
+
+      svg.append("path")
+          .datum(data)
+          .attr("class", "line")
+          .attr("d", line);
+
+    // define brush control element and its events
+    var brush = d3.svg.brush()
+        .x(x)
+        .on("brushstart", brushstart)
+        .on("brush", brushmove)
+        .on("brushend", brushend);
+
+      // create svg group with class brush and call brush on it
+    var brushg = svg.append("g")
+        .attr("class", "brush")
+        .call(brush);
+
+    // set brush extent to rect and define objects height
+    brushg.selectAll("rect")
+        .attr("height", height);
+
+    function brushstart() {
+      // console.log('brushstart event is triggered');
+    }
+
+    function brushmove() {
+      // console.log('the brush event is currently triggered');
+    }
+
+    function brushend() {
+      // console.log('NOTE: brushend event is triggered');
+      // console.log('Is the brush empty: ' + brush.empty());
+      console.log('Extent of brush: ' +  brush.extent() );
+    }
+
+    });
+  </script>
+</body>
+
+</html>
