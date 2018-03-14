@@ -75,7 +75,7 @@
   <!-- researching d3s brush -->
   <script type="text/javascript">
     var margin = {top: 20, right: 20, bottom: 30, left: 50},
-        width = 960 - margin.left - margin.right,
+        width = 560 - margin.left - margin.right,
         height = 180 - margin.top - margin.bottom;
 
     var parseDate = d3.time.format("%Y-%m-%d").parse;
@@ -102,14 +102,13 @@
     var svg = d3.select("#timeline").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-      .append("g")
+        .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     d3.csv("events.csv", function(error, data) {
       data.forEach(function(d) {
         d.count = +d.count;
         d.time_begin = parseDate(d.time_begin);
-
       });
 
       x.domain(d3.extent(data, function(d) { return d.time_begin; }));
@@ -123,7 +122,7 @@
       svg.append("g")
           .attr("class", "y axis")
           .call(yAxis)
-        .append("text")
+          .append("text")
           .attr("transform", "rotate(-90)")
           .attr("y", 6)
           .attr("dy", ".71em")
@@ -142,7 +141,7 @@
         .on("brush", brushmove)
         .on("brushend", brushend);
 
-      // create svg group with class brush and call brush on it
+    // create svg group with class brush and call brush on it
     var brushg = svg.append("g")
         .attr("class", "brush")
         .call(brush);
@@ -152,17 +151,18 @@
         .attr("height", height);
 
     function brushstart() {
-      // console.log('brushstart event is triggered');
+      console.log('brushstart event is triggered');
     }
 
     function brushmove() {
-      // console.log('the brush event is currently triggered');
+      var s = d3.event.target.extent();
+      console.log('the brush event is currently triggered, selection:', s); // in-situ selection
     }
 
     function brushend() {
-      // console.log('NOTE: brushend event is triggered');
-      // console.log('Is the brush empty: ' + brush.empty());
-      console.log('Extent of brush: ' +  brush.extent() );
+      console.log('NOTE: brushend event is triggered');
+      console.log('Is the brush empty: ' + brush.empty());
+      console.log('Extent of brush: ' +  brush.extent() ); // selection
     }
 
     });
